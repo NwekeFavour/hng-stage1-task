@@ -1,7 +1,3 @@
-Here's your **README.md** file for the project:  
-
----
-
 # Number Classifier API  
 
 This API classifies numbers based on their mathematical properties, such as **odd/even**, **prime**, **perfect**, and **Armstrong numbers**. It also calculates the **digit sum** and fetches a fun fact about the number from the **Numbers API**.  
@@ -117,7 +113,3 @@ If an invalid number (e.g., a letter) is passed, the API returns:
 ## License  
 
 This project is licensed under the MIT License.  
-
----
-
-Let me know if you need modifications! 🚀
