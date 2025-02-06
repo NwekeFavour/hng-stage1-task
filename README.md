@@ -89,7 +89,7 @@ GET http://localhost:3000/api/classify-number?number=153
     "number": 153,
     "is_prime": false,
     "is_perfect": false,
-    "properties": ["odd", "Armstrong"],
+    "properties": ["armstrong", "odd"],
     "digit_sum": 9,
     "fun_fact": "153 is an Armstrong number."
 }
@@ -103,7 +103,7 @@ If an invalid number (e.g., a letter) is passed, the API returns:
 
 ```json
 {
-    "number": "alphabet",
+    "number": "",
     "error": "true"
 }
 ```
