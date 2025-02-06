@@ -5,102 +5,85 @@ const axios = require("axios");
 
 app.use(cors());
 
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3000; // Fix: Correct order of port assignment
 
-// Optimized Prime Check (Skip even numbers except 2)
 const isPrime = (num) => {
     if (num < 2) return false;
-    if (num === 2) return true; // 2 is the only even prime number
-    if (num % 2 === 0) return false; // Skip all even numbers
-
-    for (let i = 3; i <= Math.sqrt(num); i += 2) { // Check only odd numbers
+    for (let i = 2; i <= Math.sqrt(num); i++) {
         if (num % i === 0) return false;
     }
     return true;
 };
 
-// Optimized Perfect Number Check (Stop if sum exceeds num)
 const isPerfectNumber = (num) => {
     if (num < 1) return false;
-    let sum = 1; // Start from 1 since every number is divisible by 1
-    for (let i = 2; i <= Math.sqrt(num); i++) {
+    let sum = 0;
+    for (let i = 1; i <= num / 2; i++) {
         if (num % i === 0) {
-            sum += i + (i !== num / i ? num / i : 0); // Add both factors
+            sum += i;
         }
-        if (sum > num) return false; // Early exit
     }
     return sum === num;
 };
 
-// Optimized Armstrong Check (Break if sum exceeds num)
 const isArmstrong = (num) => {
-    let sum = 0, temp = Math.abs(num);
+    let sum = 0, temp = Math.abs(num); 
     const numDigits = temp.toString().length;
-
     while (temp > 0) {
         sum += Math.pow(temp % 10, numDigits);
-        if (sum > Math.abs(num)) return false; // Early exit if sum exceeds num
         temp = Math.floor(temp / 10);
     }
     return sum === Math.abs(num);
 };
 
-// Compute digit sum
 const digitSum = (num) => {
     return Math.abs(num).toString().split("").reduce((sum, digit) => sum + parseInt(digit, 10), 0);
 };
 
-// Compute number properties
-const checkNumberProperties = (num) => ({
-    number: num,
-    is_prime: isPrime(num),
-    is_perfect: isPerfectNumber(num),
-});
+// Function to check number properties
+const checkNumberProperties = (num) => {
+    return {
+        number: num,
+        is_prime: isPrime(num),
+        is_perfect: isPerfectNumber(num),
+    };
+};
 
 app.get('/api/classify-number', async (req, res) => {
     const userInput = req.query.number;
     const num = parseInt(userInput, 10);
 
     if (isNaN(num)) {
-        return res.status(400).json({ error: true, number: userInput });
+        return res.status(400).json({
+            error: true,
+            number: userInput,  // Display exact invalid input
+            // message: "Invalid number input. Please provide a valid number."
+        });
     }
 
-    // Start timer for performance tracking
-    const startTime = process.hrtime();
+    try {
+        const triviaResponse = await axios.get(`http://numbersapi.com/${num}/math`);
 
-    // Compute number properties
-    const numberProperties = checkNumberProperties(num);
-    let properties = [];
-    if (isArmstrong(num)) properties.push("armstrong");
-    properties.push(num % 2 === 0 ? "even" : "odd");
+        let properties = [];
+        if (isArmstrong(num)) properties.push("armstrong");
+        if (num % 2 === 0) properties.push("even");
+        else properties.push("odd");
+        // if (isPerfectNumber(num)) properties.push("perfect"); 
 
-    // Fetch trivia with timeout (max 500ms)
-    const fetchTrivia = async () => {
-        try {
-            const response = await axios.get(`http://numbersapi.com/${num}/math`, { timeout:500 });
-            return response.data;
-        } catch {
-            return "Trivia not available (Timeout exceeded)";
-        }
-    };
+        // Get local number properties
+        const numberProperties = checkNumberProperties(num);
 
-    // Execute the API call with a timeout safeguard
-    const triviaPromise = fetchTrivia();
+        // Send combined response
+        res.json({
+            ...numberProperties,
+            properties: properties,
+            digit_sum: digitSum(num),
+            fun_fact: triviaResponse.data
+        });
 
-    // Wait for the result but ensure timeout
-    const funFact = await Promise.race([
-        triviaPromise,
-        new Promise((resolve) => setTimeout(() => resolve("Trivia fetch timeout"), 400))
-    ]);
-
-
-    // Final response
-    res.json({
-        ...numberProperties,
-        properties,
-        digit_sum: digitSum(num),
-        fun_fact: funFact,
-    });
+    } catch (error) {
+        res.status(500).json({ error: 'Error fetching trivia' });
+    }
 });
 
 app.listen(port, () => {
