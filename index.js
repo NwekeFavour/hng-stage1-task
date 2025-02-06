@@ -62,7 +62,7 @@ app.get('/api/classify-number', async (req, res) => {
     }
 
     try {
-        const triviaResponse = await axios.get(`https://numbersapi.com/${num}/math`);
+        const triviaResponse = await axios.get(`http://numbersapi.com/${num}/math`);
 
         let properties = [];
         if (isArmstrong(num)) properties.push("armstrong");
