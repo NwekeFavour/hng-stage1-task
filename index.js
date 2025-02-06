@@ -1,11 +1,11 @@
-const express = require("express")
-const app = express()
-const cors = require("cors")
-const axios = require("axios")
+const express = require("express");
+const app = express();
+const cors = require("cors");
+const axios = require("axios");
 
-app.use(cors())
+app.use(cors());
 
-const port = 3000 || process.env.PORT
+const port = process.env.PORT || 3000; // Fix: Correct order of port assignment
 
 const isPrime = (num) => {
     if (num < 2) return false;
@@ -17,7 +17,6 @@ const isPrime = (num) => {
 
 const isPerfectNumber = (num) => {
     if (num < 1) return false;
-
     let sum = 0;
     for (let i = 1; i <= num / 2; i++) {
         if (num % i === 0) {
@@ -28,17 +27,17 @@ const isPerfectNumber = (num) => {
 };
 
 const isArmstrong = (num) => {
-    let sum = 0, temp = num;
-    const numDigits = num.toString().length;
+    let sum = 0, temp = Math.abs(num); 
+    const numDigits = temp.toString().length;
     while (temp > 0) {
         sum += Math.pow(temp % 10, numDigits);
         temp = Math.floor(temp / 10);
     }
-    return sum === num;
+    return sum === Math.abs(num);
 };
 
 const digitSum = (num) => {
-    return num.toString().split("").reduce((sum, digit) => sum + parseInt(digit, 10), 0);
+    return Math.abs(num).toString().split("").reduce((sum, digit) => sum + parseInt(digit, 10), 0);
 };
 
 // Function to check number properties
@@ -50,31 +49,34 @@ const checkNumberProperties = (num) => {
     };
 };
 
-// Route to check number properties & fetch trivia from Numbers API
 app.get('/api/classify-number', async (req, res) => {
-    const num = parseInt(req.query.number, 10);
+    const userInput = req.query.number;
+    const num = parseInt(userInput, 10);
 
     if (isNaN(num)) {
-        return res.status(400).json({ number: 'alphabet', error: 'true' });
+        return res.status(400).json({
+            error: true,
+            number: userInput,  // Display exact invalid input
+            message: "Invalid number input. Please provide a valid number."
+        });
     }
 
     try {
-        // Fetch number trivia from Numbers API
         const triviaResponse = await axios.get(`http://numbersapi.com/${num}/math`);
-        
 
         let properties = [];
+        if (isArmstrong(num)) properties.push("armstrong");
         if (num % 2 === 0) properties.push("even");
         else properties.push("odd");
-        if (isPerfectNumber(num)) properties.push("perfect");
-        if (isArmstrong(num)) properties.push("Armstrong");
+        // if (isPerfectNumber(num)) properties.push("perfect"); 
+
         // Get local number properties
         const numberProperties = checkNumberProperties(num);
 
         // Send combined response
         res.json({
             ...numberProperties,
-            properties:  properties,
+            properties: properties,
             digit_sum: digitSum(num),
             fun_fact: triviaResponse.data
         });
@@ -84,7 +86,6 @@ app.get('/api/classify-number', async (req, res) => {
     }
 });
 
-
 app.listen(port, () => {
-    console.log(`Server is running on ${port}`)
-}) 
+    console.log(`Server is running on port ${port}`);
+});
