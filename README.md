@@ -29,7 +29,7 @@ This API classifies numbers based on their mathematical properties, such as **od
     "number": 153,
     "is_prime": false,
     "is_perfect": false,
-    "properties": ["odd", "Armstrong"],
+    "properties": ["armstrong", "odd"],
     "digit_sum": 9,
     "fun_fact": "153 is a number that is equal to the sum of its own digits each raised to the power of the number of digits."
 }

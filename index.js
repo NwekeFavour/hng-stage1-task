@@ -77,7 +77,7 @@ app.get('/api/classify-number', async (req, res) => {
     // Fetch trivia with timeout (max 500ms)
     const fetchTrivia = async () => {
         try {
-            const response = await axios.get(`http://numbersapi.com/${num}/math`, { timeout:800 });
+            const response = await axios.get(`http://numbersapi.com/${num}/math`, { timeout:500 });
             return response.data;
         } catch {
             return "Trivia not available (Timeout exceeded)";
@@ -90,7 +90,7 @@ app.get('/api/classify-number', async (req, res) => {
     // Wait for the result but ensure timeout
     const funFact = await Promise.race([
         triviaPromise,
-        new Promise((resolve) => setTimeout(() => resolve("Trivia fetch timeout"), 700))
+        new Promise((resolve) => setTimeout(() => resolve("Trivia fetch timeout"), 400))
     ]);
 
 
